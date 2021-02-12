@@ -1,6 +1,8 @@
 import struct
 import csv
 import sys
+import os
+import glob
 
 
 # docu from http://forums.ni.com/attachments/ni/60/169/1/dmheader.pdf
@@ -79,7 +81,6 @@ def read_r64(fname: str):
     explicit_types = sorted(explicit_types, key=lambda dtype: dtype.start_offset)
 
     struct_fmt = "=" + len(explicit_types) * "d"
-    # struct_fmt = '=ddddddddddddd'
     struct_len = struct.calcsize(struct_fmt)
     struct_unpack = struct.Struct(struct_fmt).unpack_from
 
@@ -123,8 +124,18 @@ if len(sys.argv) < 2:
     exit(-1)
 
 fname_with_extension = sys.argv[1]
-fname_splitted = fname_with_extension.split(".")
-if len(fname_splitted) > 2:
-    print("Error! File has multiple extensions")
 
-read_r64(fname_splitted[0])
+if not os.path.isdir(fname_with_extension):
+
+    fname_splitted = fname_with_extension.split(".")
+    if len(fname_splitted) > 2:
+        print("Error! File has multiple extensions")
+
+    read_r64(fname_splitted[0])
+
+else:
+    diadem_files = glob.glob(fname_with_extension + "/*.dat")
+    for file in diadem_files:
+        fname_splitted = file.split(".")
+        read_r64(fname_splitted[0])
+
